@@ -21,16 +21,23 @@ class Counter(object):
         self.connect()
 
     def validate(self):
-        referenced_model_fields = self.parent_model._meta.fields
-        fields_dict = dict(zip([field.name for field in referenced_model_fields], referenced_model_fields))
+        """
+        Validate that this counter is defined on the parent model.
+        """
+        parent_model_fields = self.parent_model._meta.fields
+        fields_dict = dict(zip([field.name for field in parent_model_fields], parent_model_fields))
         counter_field = fields_dict.get(self.counter_name)
         # todo: figure out why this doesn't work together with management commands:
-        # counter_field, _, _, _ = self.referenced_model._meta.get_field_by_name(self.counter_name)
+        # counter_field, _, _, _ = self.parent_model._meta.get_field_by_name(self.counter_name)
         if not isinstance(counter_field, CounterField):
             raise TypeError("%s should be a CounterField on %s, but is %s" % (
                 self.counter_name, self.parent_model, type(counter_field)))
 
     def receive_change(self, instance):
+        """
+        Called when child model instances are saved/destroyed. Increments/decrements the counter based on weather the
+        child was and is in the counter.
+        """
         was_in_counter = instance.was_persisted() and self.is_in_counter(instance.old_instance())
         is_in_counter = instance.is_persisted() and self.is_in_counter(instance)
         if not was_in_counter and is_in_counter:
@@ -39,14 +46,14 @@ class Counter(object):
             self.increment(instance, -1)
 
     def connect(self):
+        """
+        Connect counter field with child model.
+        """
         self.validate()
 
         receiver = lambda sender, instance, **kwargs: self.receive_change(instance)
         post_change.connect(receiver, sender=self.child_model, weak=False)
 
-        self.register()
-
-    def register(self):
         name = "%s-%s" % (
             "%s.%s.%s" % (self.parent_model._meta.module_name, self.child_model._meta.module_name, self.foreign_field.name),
             self.counter_name
@@ -68,4 +75,17 @@ class Counter(object):
 
 
 def connect_counter(counter_name, foreign_field, is_in_counter_func=None):
+    """
+    Register a counter between a child model and a parent. The parent must define a Counter field called
+    *counter_name* and the child must reference its parent using the foreign key *foreign_field*. Supply an optional
+    callback function *is_in_counter_func* for fine grained control over which child instances that should be counted.
+
+    counter_name       - The name of the counter. A CounterField field with this name must be defined on the parent
+                         model.
+    foreign_field      - A foreign key field defined on counted child model. The foreign key must reference the parent
+                         model.
+    is_in_counter_func - Callback function that is given instances of the child model. Given such an instance, it
+                         must return True if the instance qualifies to be counted, and False otherwise. This callback
+                         should not concern itself with checking if the instance is deleted or not.
+    """
     return Counter(counter_name, foreign_field, is_in_counter_func)
