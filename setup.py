@@ -7,11 +7,6 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-
-def requirements():
-    return [str(ir.req) for ir in parse_requirements('requirements.txt')]
-
-
 setup(
     name='django-counter-field',
     version='0.1',
@@ -34,7 +29,9 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    install_requires=requirements(),
+    install_requires=[
+        'django-model-changes>=0.15',
+    ],
     test_suite='runtests.runtests',
     tests_require=[
         'pysqlite',

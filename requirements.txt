@@ -1,1 +1,1 @@
-django-model-changes>=0.11
+django-model-changes>=0.15
