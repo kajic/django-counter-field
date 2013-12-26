@@ -8,7 +8,7 @@ from django_counter_field.counter import counters
 
 class Command(BaseCommand):
     args = '<counter_name>'
-    help = 'Rebuilds the specified counter'
+    help = 'Rebuild the specified counter. Use python manage.py list_counters for a list of available counters.'
 
     def handle(self, *args, **options):
         if len(args) != 1:
