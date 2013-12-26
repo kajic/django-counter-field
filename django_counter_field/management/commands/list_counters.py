@@ -1,8 +1,6 @@
-import sys
-
 from django.core.management.base import NoArgsCommand
+from django_counter_field.counter import counters
 
-from pomoji.django_counter_field.counter import counters
 
 class Command(NoArgsCommand):
     help = 'List all registered counters'
