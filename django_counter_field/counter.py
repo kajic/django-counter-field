@@ -24,11 +24,7 @@ class Counter(object):
         """
         Validate that this counter is defined on the parent model.
         """
-        parent_model_fields = self.parent_model._meta.fields
-        fields_dict = dict(zip([field.name for field in parent_model_fields], parent_model_fields))
-        counter_field = fields_dict.get(self.counter_name)
-        # todo: figure out why this doesn't work together with management commands:
-        # counter_field, _, _, _ = self.parent_model._meta.get_field_by_name(self.counter_name)
+        counter_field, _, _, _ = self.parent_model._meta.get_field_by_name(self.counter_name)
         if not isinstance(counter_field, CounterField):
             raise TypeError("%s should be a CounterField on %s, but is %s" % (
                 self.counter_name, self.parent_model, type(counter_field)))
