@@ -21,9 +21,8 @@ class Command(BaseCommand):
 
         counter = counters[counter_name]
 
-        for group in counter.counted_model.objects.values(counter.foreign_field.name).annotate(Count('id')).order_by():
-            counter.parent_model.objects.filter(**{
-                counter.parent_pk_name: group[counter.foreign_field.name]
-            }).update(**{
-                counter.counter_name: group['id_count']
+        for group in counter.child_model.objects.values(counter.foreign_field.name).annotate(Count('id')).order_by():
+            parent_id = group[counter.foreign_field.name]
+            counter.parent_model.objects.filter(pk=parent_id).update(
+                **{ counter.counter_name: group['id__count']
             })
