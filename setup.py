@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-counter-field',
-    version='0.2',
+    version='0.3',
     packages=find_packages(exclude=['tests']),
     license='MIT License',
     description='django-counter-field makes it extremely easy to denormalize and keep track of related model counts.',
