@@ -8,7 +8,13 @@ counters = {}
 
 
 class Counter(object):
-    def __init__(self, counter_name, foreign_field, is_in_counter):
+    """
+    Counter keeps the CounterField counter named *counter_name* up to date. Whenever changes are made to instances of
+    the counted model, i.e. the model that defines *foreign_field, the counter is potentially incremented/decremented.
+    A optional callback function *is_in_counter* can be supplied for fine grained control of exactly which child model
+    instances to count. All non-deleted instances are counted by default.
+    """
+    def __init__(self, counter_name, foreign_field, is_in_counter=None):
         self.counter_name = counter_name
         self.foreign_field = foreign_field.field
         self.child_model = self.foreign_field.model
@@ -22,7 +28,7 @@ class Counter(object):
 
     def validate(self):
         """
-        Validate that this counter is defined on the parent model.
+        Validate that this counter is indeed defined on the parent model.
         """
         counter_field, _, _, _ = self.parent_model._meta.get_field_by_name(self.counter_name)
         if not isinstance(counter_field, CounterField):
@@ -65,23 +71,24 @@ class Counter(object):
 
     def increment(self, child, amount):
         """
-        Increment a counter using a *child* instance to find the the parent.
+        Increment a counter using a *child* instance to find the the parent. Pass a negative amount to decrement.
         """
         return self.set_counter_field(child, F(self.counter_name)+amount)
 
 
-def connect_counter(counter_name, foreign_field, is_in_counter_func=None):
+def connect_counter(counter_name, foreign_field, is_in_counter=None):
     """
     Register a counter between a child model and a parent. The parent must define a CounterField field called
     *counter_name* and the child must reference its parent using a ForeignKey *foreign_field*. Supply an optional
-    callback function *is_in_counter_func* for fine grained control over which child instances that should be counted.
+    callback function *is_in_counter* for fine grained control over which child instances to count. In absence of
+    any such callback, all persisted (non-deleted) child instances are counted.
 
-    counter_name              - The name of the counter. A CounterField field with this name must be defined on the
-                                parent model.
-    foreign_field             - A ForeignKey field defined on the counted child model. The foreign key must reference
-                                the parent model.
-    is_in_counter_func(child) - Given a *child* instance, is_in_counter_func must return True if the instance qualifies
-                                to be counted, and False otherwise. This callback should not concern itself with
-                                checking if the instance is deleted or not.
+    counter_name         - The name of the counter. A CounterField field with this name must be defined on the
+                           parent model.
+    foreign_field        - A ForeignKey field defined on the counted child model. The foreign key must reference
+                           the parent model.
+    is_in_counter(child) - The callback function is_in_counter will be given instances of the counted model. It
+                           must return True if the instance qualifies to be counted, and False otherwise.
+                           The callback should not concern itself with checking if the instance is deleted or not.
     """
-    return Counter(counter_name, foreign_field, is_in_counter_func)
+    return Counter(counter_name, foreign_field, is_in_counter)
