@@ -42,6 +42,7 @@ class Counter(object):
         """
         was_in_counter = instance.was_persisted() and self.is_in_counter(instance.old_instance())
         is_in_counter = instance.is_persisted() and self.is_in_counter(instance)
+
         if not was_in_counter and is_in_counter:
             self.increment(instance, 1)
         elif was_in_counter and not is_in_counter:
@@ -62,18 +63,27 @@ class Counter(object):
         )
         counters[name] = self
 
+    def parent_id(self, child):
+        """
+        Returns the id of the parent that includes the given *child*
+        instance in its counter.
+        """
+        return getattr(child, self.foreign_field.attname)
+
     def set_counter_field(self, child, value):
         """
         Set the value of a counter field to *value* using a *child* instance to find the parent.
         """
-        parent_id = getattr(child, self.foreign_field.attname)
-        return self.parent_model.objects.filter(pk=parent_id).update(**{self.counter_name: value})
+        return self.parent_model.objects.filter(pk=parent_id).update(**{
+            self.counter_name: value
+        })
 
     def increment(self, child, amount):
         """
         Increment a counter using a *child* instance to find the the parent. Pass a negative amount to decrement.
         """
-        return self.set_counter_field(child, F(self.counter_name)+amount)
+        parent_id = self.parent_id(child)
+        return self.set_counter_field(parent_id, F(self.counter_name)+amount)
 
 
 def connect_counter(counter_name, foreign_field, is_in_counter=None):

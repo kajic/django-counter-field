@@ -8,21 +8,35 @@ from django_counter_field.counter import counters
 
 class Command(BaseCommand):
     args = '<counter_name>'
-    help = 'Rebuild the specified counter. Use python manage.py list_counters for a list of available counters.'
+    help = """
+    Rebuild the specified counter. Use python manage.py list_counters
+    for a list of available counters.
+    """
 
     def handle(self, *args, **options):
         if len(args) != 1:
             sys.exit("Usage: python manage.py rebuild_counter <counter_name>")
 
         counter_name = args[0]
-
         if not counter_name in counters:
             sys.exit("%s is not a registered counter" % counter_name)
 
         counter = counters[counter_name]
+        parent_id = 0
+        count = 0
 
-        for group in counter.child_model.objects.values(counter.foreign_field.name).annotate(Count('id')).order_by():
-            parent_id = group[counter.foreign_field.name]
-            counter.parent_model.objects.filter(pk=parent_id).update(
-                **{ counter.counter_name: group['id__count']
-            })
+        parent_field = counter.foreign_field.name
+        for child in counter.child_model.objects.all().order_by(parent_field):
+            current_parrent_id = counter.parent_id(child)
+
+            if parent_id != current_parrent_id:
+                if parent_id > 0:
+                    counter.set_counter_field(parent_id, count)
+                parent_id = current_parrent_id
+                count = 0
+
+            if counter.is_in_counter(child):
+                count = count+1
+
+        if parent_id > 0:
+            counter.set_counter_field(parent_id, count)
