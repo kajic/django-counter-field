@@ -68,8 +68,8 @@ class Counter(object):
         post_change.connect(receiver, sender=self.child_model, weak=False)
 
         name = "%s.%s.%s" % (
-            self.parent_model._meta.module_name,
-            self.child_model._meta.module_name,
+            self.parent_model._meta.model_name,
+            self.child_model._meta.model_name,
             self.foreign_field.name
         )
         counted_name = "%s-%s" % (name, self.counter_name)
