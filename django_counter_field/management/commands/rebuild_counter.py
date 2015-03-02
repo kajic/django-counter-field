@@ -22,21 +22,9 @@ class Command(BaseCommand):
             sys.exit("%s is not a registered counter" % counter_name)
 
         counter = counters[counter_name]
-        parent_id = 0
-        count = 0
 
         parent_field = counter.foreign_field.name
-        for child in counter.child_model.objects.all().order_by(parent_field):
-            current_parrent_id = counter.parent_id(child)
-
-            if parent_id != current_parrent_id:
-                if parent_id > 0:
-                    counter.set_counter_field(parent_id, count)
-                parent_id = current_parrent_id
-                count = 0
-
-            if counter.is_in_counter(child):
-                count = count+1
-
-        if parent_id > 0:
+        for parent in counter.parent_model.objects.all():
+            parent_id = parent.id
+            count = counter.child_model.objects.filter(**{ parent_field:parent_id}).count()
             counter.set_counter_field(parent_id, count)
