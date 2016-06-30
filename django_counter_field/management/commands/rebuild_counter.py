@@ -24,7 +24,12 @@ class Command(BaseCommand):
         counter = counters[counter_name]
 
         parent_field = counter.foreign_field.name
-        for parent in counter.parent_model.objects.all():
+        objects = counter.parent_model.objects.all()
+        total = objects.count()
+        for i, parent in enumerate(objects, 1):
+            if total > 1000 and i % 1000 == 0:
+                sys.stdout.write('%s of %s\n' % (i, total))
             parent_id = parent.id
             count = counter.child_model.objects.filter(**{ parent_field:parent_id}).count()
             counter.set_counter_field(parent_id, count)
+        sys.stdout.write('Completed!\n')
