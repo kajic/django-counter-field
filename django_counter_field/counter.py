@@ -34,7 +34,7 @@ class Counter(object):
         Validate that this counter is indeed defined on the parent
         model.
         """
-        counter_field, _, _, _ = self.parent_model._meta.get_field_by_name(
+        counter_field = self.parent_model._meta.get_field(
             self.counter_name
         )
         if not isinstance(counter_field, CounterField):

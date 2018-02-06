@@ -1,8 +1,8 @@
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django_counter_field.counter import counters
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = 'List all registered counters.'
 
     def handle(self, **kwargs):
