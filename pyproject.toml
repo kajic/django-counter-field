@@ -1,6 +1,6 @@
 [project]
 name = "django-counter-field"
-version = "1.0.0"
+version = "2.0.0"
 description = "Django counter field for tracking related model counts"
 readme = "README.rst"
 license = "MIT"
