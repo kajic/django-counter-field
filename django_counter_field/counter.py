@@ -1,5 +1,4 @@
 from django.db.models import F
-
 from django_model_changes import post_change
 
 from .fields import CounterField
@@ -7,7 +6,7 @@ from .fields import CounterField
 counters = {}
 
 
-class Counter(object):
+class Counter:
     """
     Counter keeps the CounterField counter named *counter_name* up to
     date. Whenever changes are made to instances of the counted child
@@ -17,11 +16,12 @@ class Counter(object):
     control over exactly which child model instances are to be counted.
     By default, all non-deleted instances are counted.
     """
+
     def __init__(self, counter_name, foreign_field, is_in_counter=None):
         self.counter_name = counter_name
         self.foreign_field = foreign_field.field
         self.child_model = self.foreign_field.model
-        self.parent_model = self.foreign_field.rel.to
+        self.parent_model = self.foreign_field.remote_field.model
 
         if not is_in_counter:
             is_in_counter = lambda instance: True
@@ -34,12 +34,12 @@ class Counter(object):
         Validate that this counter is indeed defined on the parent
         model.
         """
-        counter_field, _, _, _ = self.parent_model._meta.get_field_by_name(
-            self.counter_name
-        )
+        counter_field = self.parent_model._meta.get_field(self.counter_name)
         if not isinstance(counter_field, CounterField):
-            raise TypeError("%s should be a CounterField on %s, but is %s" % (
-                self.counter_name, self.parent_model, type(counter_field)))
+            raise TypeError(
+                "%s should be a CounterField on %s, but is %s"
+                % (self.counter_name, self.parent_model, type(counter_field))
+            )
 
     def receive_change(self, instance):
         """
@@ -47,10 +47,8 @@ class Counter(object):
         Increments/decrements the underlying counter based on whether
         the child was/is in the counter.
         """
-        was_in_counter = instance.was_persisted() and \
-                         self.is_in_counter(instance.old_instance())
-        is_in_counter = instance.is_persisted() and \
-                        self.is_in_counter(instance)
+        was_in_counter = instance.was_persisted() and self.is_in_counter(instance.old_instance())
+        is_in_counter = instance.is_persisted() and self.is_in_counter(instance)
 
         if not was_in_counter and is_in_counter:
             self.increment(instance, 1)
@@ -65,12 +63,13 @@ class Counter(object):
 
         def receiver(sender, instance, **kwargs):
             self.receive_change(instance)
+
         post_change.connect(receiver, sender=self.child_model, weak=False)
 
         name = "%s.%s.%s" % (
             self.parent_model._meta.model_name,
             self.child_model._meta.model_name,
-            self.foreign_field.name
+            self.foreign_field.name,
         )
         counted_name = "%s-%s" % (name, self.counter_name)
         counters[counted_name] = self
@@ -86,9 +85,7 @@ class Counter(object):
         """
         Set the value of a counter field on *parent_id* to *value*.
         """
-        return self.parent_model.objects.filter(pk=parent_id).update(**{
-            self.counter_name: value
-        })
+        return self.parent_model.objects.filter(pk=parent_id).update(**{self.counter_name: value})
 
     def increment(self, child, amount):
         """
@@ -96,7 +93,7 @@ class Counter(object):
         parent. Pass a negative amount to decrement.
         """
         parent_id = self.parent_id(child)
-        return self.set_counter_field(parent_id, F(self.counter_name)+amount)
+        return self.set_counter_field(parent_id, F(self.counter_name) + amount)
 
 
 def connect_counter(counter_name, foreign_field, is_in_counter=None):

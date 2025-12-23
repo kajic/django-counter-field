@@ -1,10 +1,11 @@
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
+
 from django_counter_field.counter import counters
 
 
-class Command(NoArgsCommand):
-    help = 'List all registered counters.'
+class Command(BaseCommand):
+    help = "List all registered counters."
 
-    def handle(self, **kwargs):
+    def handle(self, *args, **kwargs):
         for i, counter_name in enumerate(counters.keys(), 1):
-            print "%s. %s" % (i, counter_name)
+            self.stdout.write(f"{i}. {counter_name}")

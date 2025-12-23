@@ -1,25 +1,22 @@
-import sys
-
 from django.core.management.base import BaseCommand
-from django.db.models import Count
 
 from django_counter_field.counter import counters
 
 
 class Command(BaseCommand):
-    args = '<counter_name>'
     help = """
     Rebuild the specified counter. Use python manage.py list_counters
     for a list of available counters.
     """
 
-    def handle(self, *args, **options):
-        if len(args) != 1:
-            sys.exit("Usage: python manage.py rebuild_counter <counter_name>")
+    def add_arguments(self, parser):
+        parser.add_argument("counter_name", type=str, help="Name of the counter to rebuild")
 
-        counter_name = args[0]
-        if not counter_name in counters:
-            sys.exit("%s is not a registered counter" % counter_name)
+    def handle(self, *args, **options):
+        counter_name = options["counter_name"]
+        if counter_name not in counters:
+            self.stderr.write(f"{counter_name} is not a registered counter")
+            return
 
         counter = counters[counter_name]
 
@@ -28,8 +25,8 @@ class Command(BaseCommand):
         total = objects.count()
         for i, parent in enumerate(objects, 1):
             if total > 1000 and i % 1000 == 0:
-                sys.stdout.write('%s of %s\n' % (i, total))
+                self.stdout.write(f"{i} of {total}")
             parent_id = parent.id
-            count = counter.child_model.objects.filter(**{ parent_field:parent_id}).count()
+            count = counter.child_model.objects.filter(**{parent_field: parent_id}).count()
             counter.set_counter_field(parent_id, count)
-        sys.stdout.write('Completed!\n')
+        self.stdout.write("Completed!")

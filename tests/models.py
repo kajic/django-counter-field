@@ -12,16 +12,18 @@ class User(models.Model):
 
 
 class Relationship(CounterMixin, models.Model):
-    consumer = models.ForeignKey('User', related_name='producer_set')
-    producer = models.ForeignKey('User', related_name='consumer_set')
+    consumer = models.ForeignKey("User", related_name="producer_set", on_delete=models.CASCADE)
+    producer = models.ForeignKey("User", related_name="consumer_set", on_delete=models.CASCADE)
 
-connect_counter('following_count', Relationship.consumer)
-connect_counter('followers_count', Relationship.producer)
+
+connect_counter("following_count", Relationship.consumer)
+connect_counter("followers_count", Relationship.producer)
 
 
 class Article(CounterMixin, models.Model):
-    user = models.ForeignKey('User')
+    user = models.ForeignKey("User", on_delete=models.CASCADE)
     is_draft = models.BooleanField(default=True)
 
-connect_counter('published_count', Article.user, lambda article: not article.is_draft)
-connect_counter('draft_count', Article.user, lambda article: article.is_draft)
+
+connect_counter("published_count", Article.user, lambda article: not article.is_draft)
+connect_counter("draft_count", Article.user, lambda article: article.is_draft)

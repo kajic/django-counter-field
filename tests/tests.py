@@ -22,10 +22,10 @@ class RelationshipsTestCase(TestCase):
         me = User.objects.get(pk=me.pk)
         you = User.objects.get(pk=you.pk)
 
-        self.assertEqual(me.following_count, 1) # i follow you
-        self.assertEqual(me.followers_count, 1) # you follow me
-        self.assertEqual(you.following_count, 1) # you follow me
-        self.assertEqual(you.followers_count, 1) # i follow you
+        self.assertEqual(me.following_count, 1)  # i follow you
+        self.assertEqual(me.followers_count, 1)  # you follow me
+        self.assertEqual(you.following_count, 1)  # you follow me
+        self.assertEqual(you.followers_count, 1)  # i follow you
 
         i_follow_you.delete()
 
@@ -33,8 +33,8 @@ class RelationshipsTestCase(TestCase):
         you = User.objects.get(pk=you.pk)
 
         self.assertEqual(me.following_count, 0)
-        self.assertEqual(me.followers_count, 1) # you follow me
-        self.assertEqual(you.following_count, 1) # you follow me
+        self.assertEqual(me.followers_count, 1)  # you follow me
+        self.assertEqual(you.following_count, 1)  # you follow me
         self.assertEqual(you.followers_count, 0)
 
 
