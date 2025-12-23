@@ -90,7 +90,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.0,<7.0" },
-    { name = "django-model-changes", editable = "../django-model-changes" },
+    { name = "django-model-changes", specifier = ">=1.0.3" },
 ]
 
 [package.metadata.requires-dev]
@@ -105,23 +105,14 @@ dev = [
 
 [[package]]
 name = "django-model-changes"
-version = "1.0.2"
-source = { editable = "../django-model-changes" }
+version = "1.0.3"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-
-[package.metadata]
-requires-dist = [{ name = "django", specifier = ">=5.0,<7.0" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "django-stubs", specifier = ">=5.0.0" },
-    { name = "pyright", specifier = ">=1.1.0" },
-    { name = "pytest", specifier = ">=8.0.0" },
-    { name = "pytest-django", specifier = ">=4.9.0" },
-    { name = "ruff", specifier = ">=0.8.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/24/95/87c5ab09278156ec7339295620c0bd759600922ea698f198332f442aaeec/django_model_changes-1.0.3.tar.gz", hash = "sha256:c966572cb168095e85e1516be2dff77f65d8f12ba0aeb51e0b2f4b6c25caf7c1", size = 10912, upload-time = "2025-12-23T04:44:25.042Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b9/53/df76a9ccfa208b0874429cd9bda7261ed5447d9ecf259e2ad1792caf1fe4/django_model_changes-1.0.3-py3-none-any.whl", hash = "sha256:39855fd865fecc636d221bd2b7e50b346610119925d183e0c3eef4c96e111054", size = 6481, upload-time = "2025-12-23T04:44:24.016Z" },
 ]
 
 [[package]]
